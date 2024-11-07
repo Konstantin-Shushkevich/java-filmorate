@@ -36,6 +36,11 @@ public class FilmController {
             films.put(film.getId(), film);
             log.debug("Film {} was successfully updated", film.getName());
             return film;
+        } else if (film.getId() > 0) {
+            films.put(film.getId(), film);
+            log.debug("Film {} was successfully added, not updated. Film id in database is: {}", film.getName(),
+                    film.getId());
+            return film;
         } else {
             log.debug("Film {} was not updated: wasn't added before", film.getName());
             return create(film);

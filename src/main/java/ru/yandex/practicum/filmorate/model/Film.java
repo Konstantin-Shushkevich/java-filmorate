@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Data
 public class Film {
-    private int id;
+    private int id = -1;
     @NotNull
     @NotBlank
     private final String name;
@@ -22,5 +22,5 @@ public class Film {
     private final LocalDate releaseDate;
     @NotNull
     @Positive
-    private final double duration;
+    private final int duration;
 }

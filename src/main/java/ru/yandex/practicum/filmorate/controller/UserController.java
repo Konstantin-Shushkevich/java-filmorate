@@ -38,6 +38,12 @@ public class UserController {
             users.put(user.getId(), user);
             log.debug("User {} was successfully updated", user.getName());
             return user;
+        } else if (user.getId() > 0) {
+            setName(user);
+            users.put(user.getId(), user);
+            log.debug("User {} was successfully added, not updated. User id in database is: {}", user.getName(),
+                    user.getId());
+            return user;
         } else {
             log.debug("User {} was not updated: wasn't added before. Was added as new one", user.getName());
             return create(user);
@@ -54,7 +60,7 @@ public class UserController {
     }
 
     private void setName(User user) {
-        if (user.getName().isBlank()) {
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
     }
