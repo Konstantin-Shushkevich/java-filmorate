@@ -30,7 +30,7 @@ public class FilmController {
         return film;
     }
 
-    @PatchMapping
+    @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         if (films.containsKey(film.getId())) {
             films.put(film.getId(), film);

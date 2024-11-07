@@ -31,7 +31,7 @@ public class UserController {
         return user;
     }
 
-    @PatchMapping
+    @PutMapping
     public User update(@Valid @RequestBody User user) {
         if (users.containsKey(user.getId())) {
             setName(user);
