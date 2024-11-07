@@ -38,9 +38,10 @@ public class UserController {
             users.put(user.getId(), user);
             log.debug("User {} was successfully updated", user.getName());
             return user;
+        } else {
+            log.debug("User {} was not updated: wasn't added before. Was added as new one", user.getName());
+            return create(user);
         }
-        log.debug("User {} was not updated: wasn't added before", user.getName());
-        return null;
     }
 
     private int setNextId() {
