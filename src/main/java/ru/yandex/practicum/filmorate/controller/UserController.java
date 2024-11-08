@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -33,20 +34,19 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        if (users.containsKey(user.getId())) {
+        setName(user);
+
+        if (user.getId() == null) {
+            log.error("Missing id");
+            throw new ValidationException("Trying to update user with missing id");
+        } else if (users.containsKey(user.getId())) {
             setName(user);
             users.put(user.getId(), user);
             log.debug("User {} was successfully updated", user.getName());
             return user;
-        } else if (user.getId() > 0) {
-            setName(user);
-            users.put(user.getId(), user);
-            log.debug("User {} was successfully added, not updated. User id in database is: {}", user.getName(),
-                    user.getId());
-            return user;
         } else {
-            log.debug("User {} was not updated: wasn't added before. Was added as new one", user.getName());
-            return create(user);
+            log.debug("User {} was not updated: wasn't added before", user.getName());
+            throw new ValidationException("Trying to update user, that hadn't been added before");
         }
     }
 
