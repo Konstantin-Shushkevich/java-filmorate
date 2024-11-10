@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        user.setId(setNextId());
+        user.setId(getNextId());
         setName(user);
         users.put(user.getId(), user);
         log.debug("User {} was successfully added. User id in database is: {}", user.getName(), user.getId());
@@ -33,13 +34,11 @@ public class UserController {
     }
 
     @PutMapping
+    @Validated(NotNull.class)
     public User update(@Valid @RequestBody User user) {
         setName(user);
 
-        if (user.getId() == null) {
-            log.error("Missing id");
-            throw new ValidationException("Trying to update user with missing id");
-        } else if (users.containsKey(user.getId())) {
+        if (users.containsKey(user.getId())) {
             setName(user);
             users.put(user.getId(), user);
             log.debug("User {} was successfully updated", user.getName());
@@ -50,13 +49,12 @@ public class UserController {
         }
     }
 
-    private int setNextId() {
-        int currentMaxId = users.keySet()
+    private int getNextId() {
+        return users.keySet()
                 .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+                .max(Integer::compare)
+                .map(max -> max + 1)
+                .orElse(1);
     }
 
     private void setName(User user) {

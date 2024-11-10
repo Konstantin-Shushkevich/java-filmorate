@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 @Data
 public class User {
+    @NotNull(groups = NotNull.class)
     private Integer id;
     @NotNull
     @NotBlank
@@ -19,7 +20,7 @@ public class User {
     private final String login;
     private String name;
     @NotNull
-    @JsonFormat()
+    @JsonFormat
     @PastOrPresent
     private final LocalDate birthday;
 }

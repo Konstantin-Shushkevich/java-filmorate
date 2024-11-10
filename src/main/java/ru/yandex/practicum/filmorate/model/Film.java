@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 @Data
 public class Film {
+    @NotNull(groups = NotNull.class)
     private Integer id;
     @NotNull
     @NotBlank
@@ -20,7 +21,6 @@ public class Film {
     @DateValidation
     @JsonFormat
     private final LocalDate releaseDate;
-    @NotNull
     @Positive
     private final int duration;
 }
