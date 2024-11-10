@@ -53,8 +53,7 @@ public class UserController {
         return users.keySet()
                 .stream()
                 .max(Integer::compare)
-                .map(max -> max + 1)
-                .orElse(1);
+                .orElse(0) + 1;
     }
 
     private void setName(User user) {

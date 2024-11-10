@@ -49,7 +49,6 @@ public class FilmController {
         return films.keySet()
                 .stream()
                 .max(Integer::compare)
-                .map(max -> max + 1)
-                .orElse(1);
+                .orElse(0) + 1;
     }
 }
