@@ -3,24 +3,24 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.util.annotation.DateValidation;
 
 import java.time.LocalDate;
 
 @Data
-public class Film {
+public class User {
     @NotNull(groups = NotNull.class)
     private Integer id;
     @NotNull
     @NotBlank
-    private final String name;
+    @Email
+    private final String email;
     @NotNull
-    @Size(max = 200)
-    private final String description;
+    @NotBlank
+    @Pattern(regexp = "^\\S*$")
+    private final String login;
+    private String name;
     @NotNull
-    @DateValidation
     @JsonFormat
-    private final LocalDate releaseDate;
-    @Positive
-    private final int duration;
+    @PastOrPresent
+    private final LocalDate birthday;
 }
