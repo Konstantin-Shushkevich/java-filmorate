@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -29,7 +30,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             return film;
         } else {
             log.warn("Film: {} was not updated: hadn't been added before", film.getName());
-            throw new ValidationException("Trying to update film, that hadn't been added before");
+            throw new NotFoundException("Trying to update film, that hadn't been added before");
         }
     }
 
