@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
@@ -23,4 +25,5 @@ public class User {
     @JsonFormat
     @PastOrPresent
     private final LocalDate birthday;
+    private Set<Integer> friends = new HashSet<>();
 }
