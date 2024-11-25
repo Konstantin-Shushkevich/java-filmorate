@@ -34,14 +34,14 @@ public class FilmController {
     @ResponseStatus(HttpStatus.CREATED)
     public Film create(@Valid @RequestBody Film film) {
         log.trace("Adding film is started");
-        return inMemoryFilmStorage.postFilm(film);
+        return inMemoryFilmStorage.saveFilm(film);
     }
 
     @PutMapping
     @Validated(NotNull.class)
     public Film update(@Valid @RequestBody Film film) {
         log.trace("Updating film has been started");
-        return inMemoryFilmStorage.putFilm(film);
+        return inMemoryFilmStorage.updateFilm(film);
     }
 
     @GetMapping("/{id}")

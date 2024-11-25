@@ -34,14 +34,16 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User user) {
         log.trace("Adding user is started");
-        return inMemoryUserStorage.postUser(user);
+        userService.setName(user);
+        return inMemoryUserStorage.saveUser(user);
     }
 
     @PutMapping
     @Validated(NotNull.class)
     public User update(@Valid @RequestBody User user) {
         log.trace("Updating user in progress");
-        return inMemoryUserStorage.putUser(user);
+        userService.setName(user);
+        return inMemoryUserStorage.updateUser(user);
     }
 
     @GetMapping("/{id}")

@@ -8,23 +8,28 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.*;
 
-@Component
 @Slf4j
+@Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
+    private final Set<Film> topChartedFilms = new TreeSet<>(comparator);
+
+    private static final Comparator<Film> comparator = (film1, film2) -> {
+        return film2.getLikes().size() - film1.getLikes().size();
+    };
 
     @Override
-    public Film postFilm(Film film) {
+    public Film saveFilm(Film film) {
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.debug("Film: {} was successfully added. Film id in database is: {}", film.getName(), film.getId());
-        log.debug("Film: {} was added to topCharted films", film.getName());
         return film;
     }
 
     @Override
-    public Film putFilm(Film film) {
+    public Film updateFilm(Film film) {
         if (films.containsKey(film.getId())) {
+            addToTopChart(film);
             films.put(film.getId(), film);
             log.debug("Film: {} was successfully updated", film.getName());
             return film;
@@ -38,6 +43,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Film deleteFilm(Integer id) {
         if (films.containsKey(id)) {
             Film film = films.remove(id);
+            delFromTopChart(film);
             log.debug("Film was deleted");
             return film;
         } else {
@@ -58,6 +64,30 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .filter(entry -> entry.getKey().equals(id))
                 .map(Map.Entry::getValue)
                 .findFirst();
+    }
+
+    private void addToTopChart(Film film) {
+        Integer id = film.getId();
+
+        topChartedFilms.remove(findById(id).get());
+        log.trace("Old version of film was deleted from topChartedFilms for the correct work of program");
+
+        if (!film.getLikes().isEmpty()) {
+            topChartedFilms.add(film);
+            log.debug("Film was successfully added to topChartedFilms");
+        }
+    }
+
+    private void delFromTopChart(Film film) {
+        topChartedFilms.remove(film);
+    }
+
+    public List<Film> getTopChart(Integer count) {
+        if (topChartedFilms.size() < count) {
+            return new ArrayList<>(topChartedFilms);
+        } else {
+            return new ArrayList<>(topChartedFilms).subList(0, count);
+        }
     }
 
     private int getNextId() {

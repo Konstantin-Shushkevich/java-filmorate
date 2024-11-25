@@ -6,9 +6,9 @@ import java.util.Collection;
 import java.util.Optional;
 
 public interface FilmStorage {
-    Film postFilm(Film film);
+    Film saveFilm(Film film);
 
-    Film putFilm(Film film);
+    Film updateFilm(Film film);
 
     Film deleteFilm(Integer id);
 

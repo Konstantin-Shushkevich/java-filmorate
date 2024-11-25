@@ -4,12 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,8 +23,12 @@ public class UserService {
                 new NotFoundException("Friend's id doesn't in database"));
         log.trace("The user and the friend being added are in the database. Starting of adding...");
 
-        user.getFriends().add(friendId);
-        friend.getFriends().add(id);
+        if (user.equals(friend)) {
+            throw new ValidationException("You are trying to add yourself as own friend");
+        }
+
+        user.addFriend(friendId);
+        friend.addFriend(id);
         log.debug("Friend was successfully added");
         return friend;
     }
@@ -37,8 +40,8 @@ public class UserService {
                 new NotFoundException("Friend's id doesn't in database"));
         log.trace("The user and the friend being added are in the database. Starting of deletion...");
 
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(id);
+        user.delFriend(friendId);
+        friend.delFriend(id);
         log.debug("Friend was successfully deleted");
         return friend;
     }
@@ -48,11 +51,7 @@ public class UserService {
                 new NotFoundException("User's id doesn't in database"));
         log.trace("Requested user is in database");
 
-        return user.getFriends()
-                .stream()
-                .map(inMemoryUserStorage::findById)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+        return inMemoryUserStorage.findFriends(user);
     }
 
     public List<User> getCommonFriendList(Integer id, Integer otherId) {
@@ -62,17 +61,13 @@ public class UserService {
                 new NotFoundException("Other user's id doesn't in database"));
         log.trace("User and the other user validation had been passed successfully");
 
-        List<Integer> commonFriendsId = user.getFriends().stream()
-                .filter(otherUser.getFriends()::contains)
-                .toList();
+        return inMemoryUserStorage.findCommonFriends(user, otherUser);
+    }
 
-        if (commonFriendsId.isEmpty()) {
-            return List.of();
+    public void setName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.debug("The name was set to the same as the login");
         }
-
-        return commonFriendsId.stream()
-                .map(inMemoryUserStorage::findById)
-                .map(Optional::get)
-                .toList();
     }
 }
