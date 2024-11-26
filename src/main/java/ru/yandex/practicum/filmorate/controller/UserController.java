@@ -56,7 +56,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     public User deleteUser(@PathVariable Integer id) {
         log.trace("Searching for user to delete in progress");
-        return inMemoryUserStorage.deleteUser(id);
+        return userService.deleteUserCompletely(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

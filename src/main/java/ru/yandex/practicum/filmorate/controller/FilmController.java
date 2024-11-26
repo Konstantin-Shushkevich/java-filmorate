@@ -41,7 +41,7 @@ public class FilmController {
     @Validated(NotNull.class)
     public Film update(@Valid @RequestBody Film film) {
         log.trace("Updating film has been started");
-        return inMemoryFilmStorage.updateFilm(film);
+        return filmService.modifyFilm(film);
     }
 
     @GetMapping("/{id}")
@@ -54,7 +54,7 @@ public class FilmController {
     @DeleteMapping("/{id}")
     public Film deleteFilm(@PathVariable Integer id) {
         log.trace("Searching for film to delete in progress");
-        return inMemoryFilmStorage.deleteFilm(id);
+        return filmService.removeFilm(id);
     }
 
     @PutMapping("/{id}/like/{userId}")

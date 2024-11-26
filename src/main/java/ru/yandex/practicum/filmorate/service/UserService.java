@@ -8,7 +8,9 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -51,7 +53,13 @@ public class UserService {
                 new NotFoundException("User's id doesn't in database"));
         log.trace("Requested user is in database");
 
-        return inMemoryUserStorage.findFriends(user);
+        List<Integer> friendsId = user.getFriends().stream().toList();
+
+        if (friendsId.isEmpty()) {
+            return List.of();
+        }
+
+        return inMemoryUserStorage.findByIds(friendsId);
     }
 
     public List<User> getCommonFriendList(Integer id, Integer otherId) {
@@ -61,7 +69,33 @@ public class UserService {
                 new NotFoundException("Other user's id doesn't in database"));
         log.trace("User and the other user validation had been passed successfully");
 
-        return inMemoryUserStorage.findCommonFriends(user, otherUser);
+        List<Integer> commonFriendsId = user.getFriends().stream()
+                .filter(otherUser.getFriends()::contains)
+                .toList();
+
+        if (commonFriendsId.isEmpty()) {
+            return List.of();
+        }
+
+        return inMemoryUserStorage.findByIds(commonFriendsId);
+    }
+
+    public User deleteUserCompletely(Integer id) {
+        User user = inMemoryUserStorage.findById(id).orElseThrow(() ->
+                new NotFoundException("User's id you want to delete doesn't in database"));
+
+        List<Integer> friends = new ArrayList<>(user.getFriends());
+
+        if (friends.isEmpty()) {
+            return user;
+        }
+
+        friends.stream()
+                .map(friendId -> inMemoryUserStorage.findById(friendId).get())
+                .peek(user1 -> user1.delFriend(id))
+                .collect(Collectors.toList());
+
+        return inMemoryUserStorage.deleteUser(id);
     }
 
     public void setName(User user) {

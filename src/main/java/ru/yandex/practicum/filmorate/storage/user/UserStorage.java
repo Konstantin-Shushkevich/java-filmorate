@@ -17,7 +17,5 @@ public interface UserStorage {
 
     Optional<User> findById(Integer id);
 
-    List<User> findFriends(User user);
-
-    List<User> findCommonFriends(User user, User otherUser);
+    List<User> findByIds(List<Integer> usersId);
 }
