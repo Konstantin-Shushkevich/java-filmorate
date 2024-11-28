@@ -35,16 +35,12 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getAll() {
-        return films.values();
+        return new ArrayList<>(films.values());
     }
 
     @Override
     public Optional<Film> findById(Integer id) {
-        return films.entrySet()
-                .stream()
-                .filter(entry -> entry.getKey().equals(id))
-                .map(Map.Entry::getValue)
-                .findFirst();
+        return Optional.ofNullable(films.get(id));
     }
 
     private int getNextId() {

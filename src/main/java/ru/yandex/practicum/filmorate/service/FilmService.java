@@ -18,9 +18,9 @@ public class FilmService {
     private final InMemoryUserStorage inMemoryUserStorage;
     private final Set<Film> topChartedFilms = new TreeSet<>(comparator);
 
-    private static final Comparator<Film> comparator = (film1, film2) -> {
-        return film2.getLikes().size() - film1.getLikes().size();
-    };
+    private static final Comparator<Film> comparator = Comparator
+            .comparing((Film film) -> film.getLikes().size())
+            .thenComparing(Film::getId);
 
     public Film modifyFilm(Film film) {
         Film filmChecked = inMemoryFilmStorage.findById(film.getId()).orElseThrow(() ->
@@ -86,9 +86,9 @@ public class FilmService {
     public List<Film> getTopChart(Integer count) {
         log.trace("Getting topChart in progress");
         if (topChartedFilms.size() < count) {
-            return new ArrayList<>(topChartedFilms);
+            return new ArrayList<>(topChartedFilms).reversed();
         } else {
-            return new ArrayList<>(topChartedFilms).subList(0, count);
+            return new ArrayList<>(topChartedFilms).reversed().subList(0, count);
         }
     }
 }

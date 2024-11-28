@@ -42,7 +42,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getAll() {
-        return users.values();
+        return new ArrayList<>(users.values());
     }
 
     @Override
@@ -54,8 +54,8 @@ public class InMemoryUserStorage implements UserStorage {
     public List<User> findByIds(List<Integer> usersId) {
         return usersId
                 .stream()
-                .map(this::findById)
-                .map(Optional::get)
+                .map(users::get)
+                .filter(Objects::nonNull)
                 .toList();
     }
 

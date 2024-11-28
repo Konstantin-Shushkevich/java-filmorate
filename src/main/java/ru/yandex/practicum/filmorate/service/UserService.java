@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -90,10 +89,7 @@ public class UserService {
             return user;
         }
 
-        friends.stream()
-                .map(friendId -> inMemoryUserStorage.findById(friendId).get())
-                .peek(user1 -> user1.delFriend(id))
-                .collect(Collectors.toList());
+        friends.forEach(friendId -> inMemoryUserStorage.findById(friendId).ifPresent(friend -> friend.delFriend(id)));
 
         return inMemoryUserStorage.deleteUser(id);
     }
