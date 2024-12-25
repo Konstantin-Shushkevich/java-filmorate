@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 import ru.yandex.practicum.filmorate.util.annotation.DateValidation;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -28,8 +27,8 @@ public class Film {
     @Positive
     private int duration;
     private Set<Integer> likes = new HashSet<>();
-    private Set<Integer> genres;
-    private Integer ratingMPA;
+    private Set<Genre> genres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
+    private RatingMpa mpa;
 
     public void addLike(Integer userId) {
         likes.add(userId);

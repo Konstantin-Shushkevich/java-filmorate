@@ -8,9 +8,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.extractor.FilmExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 
@@ -31,13 +33,14 @@ public class JdbcFilmRepository implements FilmRepository {
         mapSqlParameterSource.addValue("description", film.getDescription());
         mapSqlParameterSource.addValue("release_date", film.getReleaseDate());
         mapSqlParameterSource.addValue("duration", film.getDuration());
-        mapSqlParameterSource.addValue("mpa_rating_id", film.getRatingMPA());
+        mapSqlParameterSource.addValue("mpa_rating_id", film.getMpa().getId());
 
         String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
                 "VALUES (:name, :description, :release_date, :duration, :mpa_rating_id)";
+
         jdbcFilms.update(sql, mapSqlParameterSource, keyHolder);
 
-        int filmId;
+        int filmId = 0;
         if (keyHolder.getKey() != null) {
             filmId = keyHolder.getKey().intValue();
             film.setId(filmId);
@@ -46,13 +49,15 @@ public class JdbcFilmRepository implements FilmRepository {
         saveFilmGenres(film);
         log.debug("Film: {} was successfully added. Film id in database is: {}", film.getName(), film.getId());
 
-        return film;
+        return findById(filmId).orElseThrow(() -> new InternalServerException("Film wasn't save"));
     }
 
     private void saveFilmGenres(Film film) {
         if (!film.getGenres().isEmpty() && film.getId() != 0) {
 
-            List<Integer> genresId = new LinkedList<>(film.getGenres());
+            List<Integer> genresId = film.getGenres().stream()
+                    .map(Genre::getId)
+                    .toList();
 
             for (Integer id : genresId) {
                 MapSqlParameterSource otherMapSqlParameterSource = new MapSqlParameterSource();
@@ -71,7 +76,7 @@ public class JdbcFilmRepository implements FilmRepository {
         findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
 
         if (id == null) {
-            throw new RuntimeException("Film's id is null");
+            throw new InternalServerException("Film's id is null");
         }
 
         deleteFilm(id);
@@ -82,7 +87,7 @@ public class JdbcFilmRepository implements FilmRepository {
         mapSqlParameterSource.addValue("description", film.getDescription());
         mapSqlParameterSource.addValue("release_date", film.getReleaseDate());
         mapSqlParameterSource.addValue("duration", film.getDuration());
-        mapSqlParameterSource.addValue("mpa_rating_id", film.getRatingMPA());
+        mapSqlParameterSource.addValue("mpa_rating_id", film.getMpa().getId());
 
         String sql = "INSERT INTO films (id, name, description, release_date, duration, mpa_rating_id) " +
                 "VALUES (:id, :name, :description, :release_date, :duration, :mpa_rating_id)";
@@ -127,6 +132,7 @@ public class JdbcFilmRepository implements FilmRepository {
     public Optional<Film> findById(Integer id) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("id", id);
+
         String sql = "SELECT f.*, fg.genre_id, g.genre_name, mr.point_name, l.user_id " +
                 "FROM films f JOIN film_genre fg ON f.id = fg.film_id " +
                 "JOIN genre g ON fg.genre_id = g.id " +

@@ -9,10 +9,11 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import ru.yandex.practicum.filmorate.extractor.FilmExtractor;
 import ru.yandex.practicum.filmorate.extractor.UserExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.film.JdbcFilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.JdbcUserRepository;
@@ -32,16 +33,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Import({JdbcFilmRepository.class, JdbcUserRepository.class, UserExtractor.class, FilmExtractor.class})
 class FilmorateApplicationTests {
 
-	private final NamedParameterJdbcOperations jdbc;
 	private final JdbcFilmRepository jdbcFilmRepository;
 	private final JdbcUserRepository jdbcUserRepository;
-	private final NamedParameterJdbcOperations namedParameterJdbcOperations;
 	private final JdbcTemplate jdbcTemplate;
 
-	private User user1 = new User();
-	private User user2 = new User();
-	private Film film1 = new Film();
-	private Film film2 = new Film();
+	private final User user1 = new User();
+	private final User user2 = new User();
+	private final Film film1 = new Film();
+	private final Film film2 = new Film();
+
+	RatingMpa mpa1 = new RatingMpa();
+	RatingMpa mpa2 = new RatingMpa();
+	Genre genre1 = new Genre();
+	Genre genre2 = new Genre();
+	Genre genre3 = new Genre();
+
 
 	List<User> usersTest = List.of(user1, user2);
 	List<Film> filmsTest = List.of(film1, film2);
@@ -58,20 +64,34 @@ class FilmorateApplicationTests {
 		user2.setName("user2");
 		user2.setBirthday(LocalDate.of(1990, 1, 1));
 
+		mpa1.setId(1);
+		mpa1.setName("G");
+
+		mpa2.setId(5);
+		mpa2.setName("C-17");
+
+		genre1.setId(1);
+		genre1.setName("Комедия");
+
+		genre2.setId(2);
+		genre2.setName("Драма");
+
+		genre3.setId(6);
+		genre3.setName("Боевик");
 
 		film1.setName("film1");
 		film1.setDescription("testing test1");
 		film1.setReleaseDate(LocalDate.of(1995, 6, 1));
 		film1.setDuration(100);
-		film1.setGenres(Set.of(1, 2));
-		film1.setRatingMPA(1);
+		film1.setGenres(Set.of(genre1, genre2));
+		film1.setMpa(mpa1);
 
 		film2.setName("film2");
 		film2.setDescription("testing test2");
 		film2.setReleaseDate(LocalDate.of(2005, 6, 1));
 		film2.setDuration(100);
-		film2.setGenres(Set.of(5, 6));
-		film2.setRatingMPA(5);
+		film2.setGenres(Set.of(genre3));
+		film2.setMpa(mpa2);
 
 		jdbcUserRepository.saveUser(user1);
 		jdbcUserRepository.saveUser(user2);
@@ -210,6 +230,9 @@ class FilmorateApplicationTests {
 	@Test
 	public void testGetAllFilms() {
 		List<Film> films = jdbcFilmRepository.getAll().stream().toList();
+		System.out.println(films);
+		System.out.println("!!!!");
+		System.out.println(filmsTest);
 
 		assertThat(films).containsExactlyInAnyOrderElementsOf(filmsTest);
 	}
@@ -222,8 +245,8 @@ class FilmorateApplicationTests {
 		filmUpdated.setDescription("testing test upd");
 		filmUpdated.setReleaseDate(LocalDate.of(1985, 6, 1));
 		filmUpdated.setDuration(120);
-		filmUpdated.setGenres(Set.of(3, 4));
-		filmUpdated.setRatingMPA(2);
+		filmUpdated.setGenres(Set.of(genre3));
+		filmUpdated.setMpa(mpa2);
 
 		jdbcFilmRepository.updateFilm(filmUpdated);
 		Film filmUpdatedFromRep = jdbcFilmRepository.findById(1).get();
