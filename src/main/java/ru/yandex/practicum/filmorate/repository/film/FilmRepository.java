@@ -1,11 +1,11 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.repository.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Optional;
 
-public interface FilmStorage {
+public interface FilmRepository {
     Film saveFilm(Film film);
 
     Film updateFilm(Film film);

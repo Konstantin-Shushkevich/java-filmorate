@@ -1,0 +1,156 @@
+package ru.yandex.practicum.filmorate.repository.film;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.extractor.FilmExtractor;
+import ru.yandex.practicum.filmorate.model.Film;
+
+import java.util.*;
+
+@Slf4j
+@Repository
+@RequiredArgsConstructor
+public class JdbcFilmRepository implements FilmRepository {
+    private final NamedParameterJdbcOperations jdbcFilms;
+
+    @Autowired
+    private FilmExtractor filmExtractor;
+
+    @Override
+    public Film saveFilm(Film film) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("name", film.getName());
+        mapSqlParameterSource.addValue("description", film.getDescription());
+        mapSqlParameterSource.addValue("release_date", film.getReleaseDate());
+        mapSqlParameterSource.addValue("duration", film.getDuration());
+        mapSqlParameterSource.addValue("mpa_rating_id", film.getRatingMPA());
+
+        String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating_id) " +
+                "VALUES (:name, :description, :release_date, :duration, :mpa_rating_id)";
+        jdbcFilms.update(sql, mapSqlParameterSource, keyHolder);
+
+        int filmId;
+        if (keyHolder.getKey() != null) {
+            filmId = keyHolder.getKey().intValue();
+            film.setId(filmId);
+        }
+
+        saveFilmGenres(film);
+        log.debug("Film: {} was successfully added. Film id in database is: {}", film.getName(), film.getId());
+
+        return film;
+    }
+
+    private void saveFilmGenres(Film film) {
+        if (!film.getGenres().isEmpty() && film.getId() != 0) {
+
+            List<Integer> genresId = new LinkedList<>(film.getGenres());
+
+            for (Integer id : genresId) {
+                MapSqlParameterSource otherMapSqlParameterSource = new MapSqlParameterSource();
+                otherMapSqlParameterSource.addValue("film_id", film.getId());
+                otherMapSqlParameterSource.addValue("genre_id", id);
+
+                String otherSql = "INSERT INTO film_genre (film_id, genre_id) VALUES (:film_id, :genre_id)";
+                jdbcFilms.update(otherSql, otherMapSqlParameterSource);
+            }
+        }
+    }
+
+    @Override
+    public Film updateFilm(Film film) {
+        Integer id = film.getId();
+        findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
+
+        if (id == null) {
+            throw new RuntimeException("Film's id is null");
+        }
+
+        deleteFilm(id);
+
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("id", id);
+        mapSqlParameterSource.addValue("name", film.getName());
+        mapSqlParameterSource.addValue("description", film.getDescription());
+        mapSqlParameterSource.addValue("release_date", film.getReleaseDate());
+        mapSqlParameterSource.addValue("duration", film.getDuration());
+        mapSqlParameterSource.addValue("mpa_rating_id", film.getRatingMPA());
+
+        String sql = "INSERT INTO films (id, name, description, release_date, duration, mpa_rating_id) " +
+                "VALUES (:id, :name, :description, :release_date, :duration, :mpa_rating_id)";
+        jdbcFilms.update(sql, mapSqlParameterSource);
+
+        saveFilmGenres(film);
+        log.debug("Film: {} was successfully updated", film.getName());
+
+        return film;
+    }
+
+    @Override
+    public Film deleteFilm(Integer id) {
+        Film film = findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("id", id);
+
+        String sql = "DELETE FROM films WHERE id = :id";
+        jdbcFilms.update(sql, mapSqlParameterSource);
+        log.debug("Film was deleted");
+
+        return film;
+    }
+
+    @Override
+    public Collection<Film> getAll() {
+        String sql = "SELECT id FROM films";
+
+        List<Integer> filmsId = jdbcFilms.getJdbcOperations().queryForList(sql, Integer.class);
+        List<Film> films = new LinkedList<>();
+        Film film;
+
+        for (Integer id : filmsId) {
+            film = findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
+            films.add(film);
+        }
+
+        return films;
+    }
+
+    @Override
+    public Optional<Film> findById(Integer id) {
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("id", id);
+        String sql = "SELECT f.*, fg.genre_id, g.genre_name, mr.point_name, l.user_id " +
+                "FROM films f JOIN film_genre fg ON f.id = fg.film_id " +
+                "JOIN genre g ON fg.genre_id = g.id " +
+                "JOIN mpa_rating mr ON mr.id = f.mpa_rating_id " +
+                "LEFT JOIN likes l ON l.film_id = f.id " +
+                "WHERE f.id = :id";
+        return Optional.ofNullable(jdbcFilms.query(sql, mapSqlParameterSource, filmExtractor));
+    }
+
+    public Optional<Film> likeFilm(Integer id, Integer userId) {
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("user_id", userId);
+        mapSqlParameterSource.addValue("film_id", id);
+        String sql = "INSERT INTO likes (user_id, film_id) VALUES (:user_id, :film_id)";
+        jdbcFilms.update(sql, mapSqlParameterSource);
+        return findById(id);
+    }
+
+    public Optional<Film> disLikeFilm(Integer id, Integer userId) {
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("user_id", userId);
+        mapSqlParameterSource.addValue("film_id", id);
+        String sql = "DELETE FROM likes WHERE (user_id = :user_id AND film_id =:film_id)";
+        jdbcFilms.update(sql, mapSqlParameterSource);
+        return findById(id);
+    }
+}
