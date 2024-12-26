@@ -230,9 +230,6 @@ class FilmorateApplicationTests {
 	@Test
 	public void testGetAllFilms() {
 		List<Film> films = jdbcFilmRepository.getAll().stream().toList();
-		System.out.println(films);
-		System.out.println("!!!!");
-		System.out.println(filmsTest);
 
 		assertThat(films).containsExactlyInAnyOrderElementsOf(filmsTest);
 	}

@@ -52,7 +52,7 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             throw new InternalServerException("Something went wrong. Film is null");
         }
 
-        if (!likes.isEmpty()) {
+        if (!likes.contains(0)) {
             film.setLikes(likes);
         }
 
