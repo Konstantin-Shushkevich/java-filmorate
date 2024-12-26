@@ -27,7 +27,7 @@ public class Film {
     @Positive
     private int duration;
     private Set<Integer> likes = new HashSet<>();
-    private Set<Genre> genres = new TreeSet<>(Comparator.comparingInt(Genre::getId));
+    private Set<Genre> genres = new TreeSet<>((g1, g2) -> Integer.compare(g1.getId(), g2.getId()));
     private RatingMpa mpa;
 
     public void addLike(Integer userId) {

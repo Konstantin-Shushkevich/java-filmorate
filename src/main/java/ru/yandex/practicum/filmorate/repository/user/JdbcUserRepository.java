@@ -18,10 +18,48 @@ import java.util.*;
 @Repository
 @RequiredArgsConstructor
 public class JdbcUserRepository implements UserRepository {
+
     private final NamedParameterJdbcOperations jdbcUsers;
 
     @Autowired
     private UserExtractor userExtractor;
+
+    private static final String INSERT_USER_TO_USERS =
+            "INSERT INTO users (email, login, name, birthday) " +
+                    "VALUES (:email, :login, :name, :birthday)";
+
+    private static final String INSERT_USER_TO_USERS_IF_UPDATE =
+            "UPDATE users " +
+                    "SET email = :email, login = :login, name = :name, birthday = :birthday " +
+                    "WHERE id = :id";
+
+    private static final String DELETE_USER_FROM_USERS = "DELETE FROM users WHERE id = :id";
+
+    private static final String GET_ALL_ID_FROM_USERS = "SELECT id FROM users";
+
+    private static final String GET_VALUES_FOR_USER_MAPPING =
+            "SELECT u.*, f.* FROM users u " +
+                    "LEFT JOIN friendship f ON (u.id = f.user_id OR u.id = f.friend_id) " +
+                    "WHERE u.id = :id";
+
+    private static final String UPDATE_FRIENDSHIP_STATUS =
+            "UPDATE friendship " +
+                    "SET status = :status " +
+                    "WHERE user_id = :friend_id";
+
+    private final static String INSERT_NEW_LINE_TO_FRIENDSHIP =
+            "INSERT INTO friendship (user_id, friend_id, status) " +
+                    "VALUES (:user_id, :friend_id, :status)";
+
+    private final static String UPDATE_FRIENDSHIP_STATUS_IF_DELETE =
+            "UPDATE friendship SET status = :status " +
+                    "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
+                    "(user_id = :friend_id AND friend_id = :user_id)";
+
+    private final static String DELETE_FRIENDSHIP_COMPLETELY =
+            "DELETE FROM friendship " +
+                    "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
+                    "(user_id = :friend_id AND friend_id = :user_id)";
 
     @Override
     public User saveUser(User user) {
@@ -32,8 +70,7 @@ public class JdbcUserRepository implements UserRepository {
         mapSqlParameterSource.addValue("name", user.getName());
         mapSqlParameterSource.addValue("birthday", user.getBirthday());
 
-        String sql = "INSERT INTO users (email, login, name, birthday) VALUES (:email, :login, :name, :birthday)";
-        jdbcUsers.update(sql, mapSqlParameterSource, keyHolder);
+        jdbcUsers.update(INSERT_USER_TO_USERS, mapSqlParameterSource, keyHolder);
 
         int userId;
         if (keyHolder.getKey() != null) {
@@ -58,11 +95,7 @@ public class JdbcUserRepository implements UserRepository {
         mapSqlParameterSource.addValue("name", user.getName());
         mapSqlParameterSource.addValue("birthday", user.getBirthday());
 
-        String sql = "UPDATE users " +
-                "SET email = :email, login = :login, name = :name, birthday = :birthday " +
-                "WHERE id = :id";
-
-        jdbcUsers.update(sql, mapSqlParameterSource);
+        jdbcUsers.update(INSERT_USER_TO_USERS_IF_UPDATE, mapSqlParameterSource);
         log.debug("User {} was successfully updated", user.getName());
 
         return user;
@@ -74,8 +107,7 @@ public class JdbcUserRepository implements UserRepository {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("id", id);
 
-        String sql = "DELETE FROM users WHERE id = :id";
-        jdbcUsers.update(sql, mapSqlParameterSource);
+        jdbcUsers.update(DELETE_USER_FROM_USERS, mapSqlParameterSource);
         log.debug("User: {} was deleted", user.getName());
 
         return user;
@@ -83,9 +115,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public Collection<User> getAll() {
-        String sql = "SELECT id FROM users";
-
-        List<Integer> usersId = jdbcUsers.getJdbcOperations().queryForList(sql, Integer.class);
+        List<Integer> usersId = jdbcUsers.getJdbcOperations().queryForList(GET_ALL_ID_FROM_USERS, Integer.class);
         List<User> users = new LinkedList<>();
         User user;
 
@@ -101,10 +131,9 @@ public class JdbcUserRepository implements UserRepository {
     public Optional<User> findById(Integer id) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("id", id);
-        String sql = "SELECT u.*, f.* FROM users u " +
-                "LEFT JOIN friendship f ON (u.id = f.user_id OR u.id = f.friend_id) WHERE u.id = :id";
 
-        return Optional.ofNullable(jdbcUsers.query(sql, mapSqlParameterSource, userExtractor));
+
+        return Optional.ofNullable(jdbcUsers.query(GET_VALUES_FOR_USER_MAPPING, mapSqlParameterSource, userExtractor));
     }
 
     @Override
@@ -114,6 +143,7 @@ public class JdbcUserRepository implements UserRepository {
                 .toList();
     }
 
+    @Override
     public void addFriend(Integer userId, Integer friendId, boolean status) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         String sql;
@@ -121,19 +151,13 @@ public class JdbcUserRepository implements UserRepository {
         if (status) {
             mapSqlParameterSource.addValue("friend_id", friendId);
             mapSqlParameterSource.addValue("status", true);
-
-            sql = "UPDATE friendship " +
-                    "SET status = :status " +
-                    "WHERE user_id = :friend_id";
+            sql = UPDATE_FRIENDSHIP_STATUS;
         } else {
             mapSqlParameterSource.addValue("user_id", userId);
             mapSqlParameterSource.addValue("friend_id", friendId);
             mapSqlParameterSource.addValue("status", false);
-
-            sql = "INSERT INTO friendship (user_id, friend_id, status) " +
-                    "VALUES (:user_id, :friend_id, :status)";
+            sql = INSERT_NEW_LINE_TO_FRIENDSHIP;
         }
-
         jdbcUsers.update(sql, mapSqlParameterSource);
     }
 
@@ -145,13 +169,9 @@ public class JdbcUserRepository implements UserRepository {
 
         if (status) {
             mapSqlParameterSource.addValue("status", false);
-            sql = "UPDATE friendship SET status = :status " +
-                    "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
-                    "(user_id = :friend_id AND friend_id = :user_id)";
+            sql = UPDATE_FRIENDSHIP_STATUS_IF_DELETE;
         } else {
-            sql = "DELETE FROM friendship " +
-                    "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
-                    "(user_id = :friend_id AND friend_id = :user_id)";
+            sql = DELETE_FRIENDSHIP_COMPLETELY;
         }
         jdbcUsers.update(sql, mapSqlParameterSource);
     }

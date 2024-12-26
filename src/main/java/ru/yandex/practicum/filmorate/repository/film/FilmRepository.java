@@ -15,4 +15,8 @@ public interface FilmRepository {
     Collection<Film> getAll();
 
     Optional<Film> findById(Integer id);
+
+    Optional<Film> likeFilm(Integer id, Integer userId);
+
+    Optional<Film> disLikeFilm(Integer id, Integer userId);
 }

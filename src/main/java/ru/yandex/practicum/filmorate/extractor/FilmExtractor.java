@@ -12,15 +12,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 @Component
 public class FilmExtractor implements ResultSetExtractor<Film> {
     @Override
     public Film extractData(ResultSet rs) throws SQLException, DataAccessException {
         Film film = new Film();
-        Set<Genre> genres = new LinkedHashSet<>();
+        Set<Genre> genres = new TreeSet<>((g1, g2) -> Integer.compare(g1.getId(), g2.getId()));
         Set<Integer> likes = new HashSet<>();
         RatingMpa ratingMpa = new RatingMpa();
 
@@ -36,7 +36,7 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             ratingMpa.setId(rs.getInt("mpa_rating_id"));
             ratingMpa.setName(rs.getString("point_name"));
 
-            if (ratingMpa.getName() == null) { // TODO
+            if (ratingMpa.getName() == null) {
                 film.setMpa(ratingMpa);
             }
 
