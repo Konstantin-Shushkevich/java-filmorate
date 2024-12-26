@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.extractor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
@@ -18,13 +19,14 @@ import java.util.TreeSet;
 public class FilmExtractor implements ResultSetExtractor<Film> {
     @Override
     public Film extractData(ResultSet rs) throws SQLException, DataAccessException {
-        Film film = new Film();
+        Film film = null;
         Set<Genre> genres = new TreeSet<>((g1, g2) -> Integer.compare(g1.getId(), g2.getId()));
         Set<Integer> likes = new HashSet<>();
         RatingMpa ratingMpa = new RatingMpa();
 
         while (rs.next()) {
-            if (film.getId() == null) {
+            if (film == null) {
+                film = new Film();
                 film.setId(rs.getInt("id"));
                 film.setName(rs.getString("name"));
                 film.setDescription(rs.getString("description"));
@@ -34,10 +36,6 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
 
             ratingMpa.setId(rs.getInt("mpa_rating_id"));
             ratingMpa.setName(rs.getString("point_name"));
-
-            if (ratingMpa.getName() == null) {
-                film.setMpa(ratingMpa);
-            }
 
             Genre genre = new Genre();
             genre.setId(rs.getInt("genre_id"));
@@ -50,12 +48,21 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             likes.add(rs.getInt("user_id"));
         }
 
-        if (!(likes.isEmpty() || likes.contains(0))) {
+        if (film == null) {
+            throw new InternalServerException("Something went wrong. Film is null");
+        }
+
+        if (!likes.isEmpty()) {
             film.setLikes(likes);
         }
 
-        film.setGenres(genres);
-        film.setMpa(ratingMpa);
+        if (!genres.isEmpty()) {
+            film.setGenres(genres);
+        }
+
+        if (ratingMpa.getName() != null) {
+            film.setMpa(ratingMpa);
+        }
 
         return film;
     }
