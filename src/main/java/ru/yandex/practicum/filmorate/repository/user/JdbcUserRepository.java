@@ -47,16 +47,16 @@ public class JdbcUserRepository implements UserRepository {
                     "SET status = :status " +
                     "WHERE user_id = :friend_id";
 
-    private final static String INSERT_NEW_LINE_TO_FRIENDSHIP =
+    private static final String INSERT_NEW_LINE_TO_FRIENDSHIP =
             "INSERT INTO friendship (user_id, friend_id, status) " +
                     "VALUES (:user_id, :friend_id, :status)";
 
-    private final static String UPDATE_FRIENDSHIP_STATUS_IF_DELETE =
+    private static final String UPDATE_FRIENDSHIP_STATUS_IF_DELETE =
             "UPDATE friendship SET status = :status " +
                     "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
                     "(user_id = :friend_id AND friend_id = :user_id)";
 
-    private final static String DELETE_FRIENDSHIP_COMPLETELY =
+    private static final String DELETE_FRIENDSHIP_COMPLETELY =
             "DELETE FROM friendship " +
                     "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
                     "(user_id = :friend_id AND friend_id = :user_id)";
