@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.extractor;
 
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -49,10 +48,6 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             }
 
             likes.add(rs.getInt("user_id"));
-        }
-
-        if (film.getId() == null) {
-            throw new DataRetrievalFailureException("Something went wrong. Not able to get film");
         }
 
         if (!(likes.isEmpty() || likes.contains(0))) {

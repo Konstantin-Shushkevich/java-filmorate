@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.film.JdbcFilmRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -56,9 +57,9 @@ public class FilmService {
 
     public List<Film> getTopChart(Integer count) {
         log.trace("Getting topChart in progress");
-        return new ArrayList<>(jdbcFilmRepository.getAll().stream()
+
+        return jdbcFilmRepository.getAll().stream()
                 .sorted((film1, film2) -> film2.getLikes().size() - film1.getLikes().size())
-                .limit(count)
-                .toList());
+                .limit(count).collect(Collectors.toList());
     }
 }

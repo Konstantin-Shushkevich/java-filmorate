@@ -136,7 +136,7 @@ public class JdbcFilmRepository implements FilmRepository {
     public Collection<Film> getAll() {
 
         List<Integer> filmsId = jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_FILMS, Integer.class);
-        List<Film> films = new LinkedList<>();
+        List<Film> films = new ArrayList<>();
 
         for (Integer id : filmsId) {
             Film film = findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
