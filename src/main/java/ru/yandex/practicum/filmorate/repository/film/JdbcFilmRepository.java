@@ -90,7 +90,7 @@ public class JdbcFilmRepository implements FilmRepository {
         saveFilmGenres(film);
         log.debug("Film: {} was successfully added. Film id in database is: {}", film.getName(), film.getId());
 
-        return film;
+        return findById(filmId).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
     }
 
     @Override
