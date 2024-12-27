@@ -23,7 +23,7 @@ public class User {
 
     @NotNull
     @NotBlank
-    @Size(max =50)
+    @Size(max = 50)
     @Pattern(regexp = "^\\S*$")
     private String login;
 
