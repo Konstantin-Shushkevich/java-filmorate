@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.util.constant.UserRepositoryConstants.*;
+
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -23,43 +25,6 @@ public class JdbcUserRepository implements UserRepository {
 
     @Autowired
     private UserExtractor userExtractor;
-
-    private static final String INSERT_USER_TO_USERS =
-            "INSERT INTO users (email, login, name, birthday) " +
-                    "VALUES (:email, :login, :name, :birthday)";
-
-    private static final String INSERT_USER_TO_USERS_IF_UPDATE =
-            "UPDATE users " +
-                    "SET email = :email, login = :login, name = :name, birthday = :birthday " +
-                    "WHERE id = :id";
-
-    private static final String DELETE_USER_FROM_USERS = "DELETE FROM users WHERE id = :id";
-
-    private static final String GET_ALL_ID_FROM_USERS = "SELECT id FROM users";
-
-    private static final String GET_VALUES_FOR_USER_MAPPING =
-            "SELECT u.*, f.* FROM users u " +
-                    "LEFT JOIN friendship f ON (u.id = f.user_id OR u.id = f.friend_id) " +
-                    "WHERE u.id = :id";
-
-    private static final String UPDATE_FRIENDSHIP_STATUS =
-            "UPDATE friendship " +
-                    "SET status = :status " +
-                    "WHERE user_id = :friend_id";
-
-    private static final String INSERT_NEW_LINE_TO_FRIENDSHIP =
-            "INSERT INTO friendship (user_id, friend_id, status) " +
-                    "VALUES (:user_id, :friend_id, :status)";
-
-    private static final String UPDATE_FRIENDSHIP_STATUS_IF_DELETE =
-            "UPDATE friendship SET status = :status " +
-                    "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
-                    "(user_id = :friend_id AND friend_id = :user_id)";
-
-    private static final String DELETE_FRIENDSHIP_COMPLETELY =
-            "DELETE FROM friendship " +
-                    "WHERE (user_id = :user_id AND friend_id = :friend_id) OR " +
-                    "(user_id = :friend_id AND friend_id = :user_id)";
 
     @Override
     public User saveUser(User user) {
@@ -131,7 +96,6 @@ public class JdbcUserRepository implements UserRepository {
     public Optional<User> findById(Integer id) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("id", id);
-
 
         return Optional.ofNullable(jdbcUsers.query(GET_VALUES_FOR_USER_MAPPING, mapSqlParameterSource, userExtractor));
     }

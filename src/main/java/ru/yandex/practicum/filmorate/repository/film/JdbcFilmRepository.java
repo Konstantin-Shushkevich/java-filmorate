@@ -16,6 +16,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 
+import static ru.yandex.practicum.filmorate.util.constant.FilmRepositoryConstants.*;
+
 @Slf4j
 @Repository
 @RequiredArgsConstructor
@@ -25,44 +27,6 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Autowired
     private FilmExtractor filmExtractor;
-
-    private static final String INSERT_FILM_TO_FILMS =
-            "INSERT INTO films (name, description, release_date, " +
-                    "duration, mpa_rating_id) " +
-                    "VALUES (:name, :description, :release_date, :duration, :mpa_rating_id)";
-
-    private static final String INSERT_VALUES_TO_FILM_GENRE =
-            "INSERT INTO film_genre (film_id, genre_id) " +
-                    "VALUES (:film_id, :genre_id)";
-
-    private static final String INSERT_FILM_TO_FILMS_IF_UPDATE =
-            "INSERT INTO films (id, name, description, " +
-                    "release_date, duration, mpa_rating_id) " +
-                    "VALUES (:id, :name, :description, :release_date, :duration, :mpa_rating_id)";
-
-    private static final String DELETE_FILM_FROM_FILMS = "DELETE FROM films WHERE id = :id";
-
-    private static final String GET_ALL_ID_FROM_FILMS = "SELECT id FROM films";
-
-    private static final String GET_VALUES_FOR_FILM_MAPPING =
-            "SELECT f.*, fg.genre_id, g.genre_name, mr.point_name, l.user_id " +
-                    "FROM films f LEFT JOIN film_genre fg ON f.id = fg.film_id " +
-                    "LEFT JOIN genre g ON fg.genre_id = g.id " +
-                    "LEFT JOIN mpa_rating mr ON mr.id = f.mpa_rating_id " +
-                    "LEFT JOIN likes l ON l.film_id = f.id " +
-                    "WHERE f.id = :id";
-
-    private static final String INSERT_LIKE_VALUES_TO_LIKES =
-            "INSERT INTO likes (user_id, film_id) " +
-                    "VALUES (:user_id, :film_id)";
-
-    private static final String DELETE_LIKE_FROM_LIKES =
-            "DELETE FROM likes " +
-                    "WHERE (user_id = :user_id AND film_id =:film_id)";
-
-    private static final String GET_ALL_ID_FROM_MPA_RATING = "SELECT id FROM mpa_rating";
-
-    private static final String GET_ALL_ID_FROM_GENRE = "SELECT id FROM genre";
 
     @Override
     public Film saveFilm(Film film) {
@@ -135,7 +99,6 @@ public class JdbcFilmRepository implements FilmRepository {
     @Override
     public Collection<Film> getAll() {
         List<Integer> filmsId = jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_FILMS, Integer.class);
-        System.out.println(filmsId);
         List<Film> films = new ArrayList<>();
 
         for (Integer id : filmsId) {
@@ -148,6 +111,8 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Optional<Film> findById(Integer id) {
+        validateFilmId(id);
+
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("id", id);
 
@@ -188,6 +153,15 @@ public class JdbcFilmRepository implements FilmRepository {
 
                 jdbcFilms.update(INSERT_VALUES_TO_FILM_GENRE, otherMapSqlParameterSource);
             }
+        }
+    }
+
+    private void validateFilmId(Integer id) {
+        List<Integer> filmsIdFromRepository =
+                jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_FILMS, Integer.class);
+
+        if (!filmsIdFromRepository.contains(id)) {
+            throw new NotFoundException("Film's id doesn't in database");
         }
     }
 

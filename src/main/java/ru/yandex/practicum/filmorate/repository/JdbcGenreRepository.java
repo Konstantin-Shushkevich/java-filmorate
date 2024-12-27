@@ -12,6 +12,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.util.constant.GenreRepositoryConstants.FIND_GENRE_BY_ID;
+import static ru.yandex.practicum.filmorate.util.constant.GenreRepositoryConstants.GET_ALL_GENRES_ID;
+
 @Repository
 @RequiredArgsConstructor
 public class JdbcGenreRepository implements SimpleRepository<Genre> {
@@ -20,8 +23,6 @@ public class JdbcGenreRepository implements SimpleRepository<Genre> {
     @Autowired
     private GenreExtractor genreExtractor;
 
-    private static final String FIND_GENRE_BY_ID = "SELECT * FROM genre WHERE id = :id";
-    private static final String GET_ALL_GENRES_ID = "SELECT id FROM genre";
 
     @Override
     public Collection<Genre> getAll() {

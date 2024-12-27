@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.util.annotation.DateValidation;
 
 import java.time.LocalDate;
 
-import static ru.yandex.practicum.filmorate.util.Constants.START_OF_CINEMA_EPOCH;
+import static ru.yandex.practicum.filmorate.util.constant.OtherConstants.START_OF_CINEMA_EPOCH;
 
 public class DateValidator implements ConstraintValidator<DateValidation, LocalDate> {
 

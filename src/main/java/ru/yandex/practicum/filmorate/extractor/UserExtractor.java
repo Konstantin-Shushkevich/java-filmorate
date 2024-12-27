@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.extractor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
@@ -16,11 +17,12 @@ public class UserExtractor implements ResultSetExtractor<User> {
 
     @Override
     public User extractData(ResultSet rs) throws SQLException, DataAccessException {
-        User user = new User();
+        User user = null;
         Set<Integer> friends = new HashSet<>();
 
         while (rs.next()) {
-            if (user.getId() == null) {
+            if (user == null) {
+                user = new User();
                 user.setId(rs.getInt("id"));
                 user.setEmail(rs.getString("email"));
                 user.setLogin(rs.getString("login"));
@@ -37,12 +39,12 @@ public class UserExtractor implements ResultSetExtractor<User> {
             }
         }
 
-        if (!friends.contains(0)) {
-            user.setFriends(friends);
+        if (user == null) {
+            throw new InternalServerException("Something went wrong. User is null");
         }
 
-        if (user.getId() == null) {
-            return null;
+        if (!friends.contains(0)) {
+            user.setFriends(friends);
         }
 
         return user;

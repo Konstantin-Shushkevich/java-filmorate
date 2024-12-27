@@ -12,6 +12,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static ru.yandex.practicum.filmorate.util.constant.RatingMpaRepositoryConstants.FIND_RATE_BY_ID;
+import static ru.yandex.practicum.filmorate.util.constant.RatingMpaRepositoryConstants.GET_ALL_RATES_ID;
+
 @Repository
 @RequiredArgsConstructor
 public class JdbcRatingMpaRepository implements SimpleRepository<RatingMpa> {
@@ -20,8 +23,6 @@ public class JdbcRatingMpaRepository implements SimpleRepository<RatingMpa> {
     @Autowired
     private RatingMpaExtractor ratingMpaExtractor;
 
-    private static final String FIND_RATE_BY_ID = "SELECT * FROM mpa_rating WHERE id = :id";
-    private static final String GET_ALL_RATES_ID = "SELECT id FROM mpa_rating";
 
     @Override
     public Collection<RatingMpa> getAll() {

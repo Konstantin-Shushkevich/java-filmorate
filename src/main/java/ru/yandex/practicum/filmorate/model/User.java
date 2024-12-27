@@ -14,19 +14,27 @@ import java.util.Set;
 public class User {
     @NotNull(groups = NotNull.class)
     private Integer id;
+
     @NotNull
     @NotBlank
+    @Size(max = 255)
     @Email
     private String email;
+
     @NotNull
     @NotBlank
+    @Size(max =50)
     @Pattern(regexp = "^\\S*$")
     private String login;
+
+    @Size(max = 100)
     private String name;
+
     @NotNull
     @JsonFormat
     @PastOrPresent
     private LocalDate birthday;
+
     private Set<Integer> friends = new HashSet<>();
 
     public void addFriend(Integer id) {
