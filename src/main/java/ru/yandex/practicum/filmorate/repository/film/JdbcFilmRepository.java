@@ -46,9 +46,9 @@ public class JdbcFilmRepository implements FilmRepository {
 
     private static final String GET_VALUES_FOR_FILM_MAPPING =
             "SELECT f.*, fg.genre_id, g.genre_name, mr.point_name, l.user_id " +
-                    "FROM films f JOIN film_genre fg ON f.id = fg.film_id " +
-                    "JOIN genre g ON fg.genre_id = g.id " +
-                    "JOIN mpa_rating mr ON mr.id = f.mpa_rating_id " +
+                    "FROM films f LEFT JOIN film_genre fg ON f.id = fg.film_id " +
+                    "LEFT JOIN genre g ON fg.genre_id = g.id " +
+                    "LEFT JOIN mpa_rating mr ON mr.id = f.mpa_rating_id " +
                     "LEFT JOIN likes l ON l.film_id = f.id " +
                     "WHERE f.id = :id";
 
@@ -94,7 +94,7 @@ public class JdbcFilmRepository implements FilmRepository {
     }
 
     @Override
-    public Film updateFilm(Film film) { // TODO
+    public Film updateFilm(Film film) {
         Integer id = film.getId();
         findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
 
@@ -134,9 +134,9 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Collection<Film> getAll() {
-
         List<Integer> filmsId = jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_FILMS, Integer.class);
-        List<Film> films = new LinkedList<>();
+        System.out.println(filmsId);
+        List<Film> films = new ArrayList<>();
 
         for (Integer id : filmsId) {
             Film film = findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));

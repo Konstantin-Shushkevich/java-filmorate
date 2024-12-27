@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.extractor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
@@ -47,19 +48,19 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
             likes.add(rs.getInt("user_id"));
         }
 
-        /*if (film == null) { // TODO
+        if (film == null) {
             throw new InternalServerException("Something went wrong. Film is null");
-        } */
+        }
 
-        if (!likes.contains(0) && film != null) {
+        if (!likes.contains(0)) {
             film.setLikes(likes);
         }
 
-        if (!genres.isEmpty() && film != null) {
+        if (!genres.isEmpty()) {
             film.setGenres(genres);
         }
 
-        if (ratingMpa.getName() != null && film != null) {
+        if (ratingMpa.getName() != null) {
             film.setMpa(ratingMpa);
         }
 
