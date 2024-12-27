@@ -40,7 +40,7 @@ public class UserExtractor implements ResultSetExtractor<User> {
         }
 
         if (user == null) {
-            throw new InternalServerException("Something went wrong. User is null");
+            return null;
         }
 
         if (!friends.contains(0)) {
