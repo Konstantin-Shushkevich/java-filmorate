@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.repository.film.JdbcFilmRepository;
+import ru.yandex.practicum.filmorate.repository.user.JdbcUserRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmService {
     private final JdbcFilmRepository jdbcFilmRepository;
+    private final JdbcUserRepository jdbcUserRepository;
 
     public Film modifyFilm(Film film) {
         jdbcFilmRepository.findById(film.getId()).orElseThrow(() ->
@@ -33,7 +35,7 @@ public class FilmService {
     public Film likeFilm(Integer id, Integer userId) {
         Film film = jdbcFilmRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Film's id doesn't in database"));
-        jdbcFilmRepository.findById(userId).orElseThrow(() ->
+        jdbcUserRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("User's id doesn't in database"));
         log.trace("The film and the user are in database. Start of adding like...");
 
@@ -45,14 +47,13 @@ public class FilmService {
     public Film disLikeFilm(Integer id, Integer userId) {
         Film film = jdbcFilmRepository.findById(id).orElseThrow(() ->
                 new NotFoundException("Film's id doesn't in database"));
-        jdbcFilmRepository.findById(userId).orElseThrow(() ->
+        jdbcUserRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("User's id doesn't in database"));
         log.trace("The film and the user are in database. Start of deleting like...");
 
         film.delLike(userId);
 
         return jdbcFilmRepository.disLikeFilm(id, userId).orElseThrow();
-
     }
 
     public List<Film> getTopChart(Integer count) {
