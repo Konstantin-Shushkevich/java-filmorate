@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.repository.film;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.extractor.FilmExtractor;
+import ru.yandex.practicum.filmorate.extractor.FilmListExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
@@ -24,9 +24,8 @@ import static ru.yandex.practicum.filmorate.util.constant.FilmRepositoryConstant
 public class JdbcFilmRepository implements FilmRepository {
 
     private final NamedParameterJdbcOperations jdbcFilms;
-
-    @Autowired
-    private FilmExtractor filmExtractor;
+    private final FilmExtractor filmExtractor;
+    private final FilmListExtractor filmListExtractor;
 
     @Override
     public Film saveFilm(Film film) {
@@ -98,15 +97,7 @@ public class JdbcFilmRepository implements FilmRepository {
 
     @Override
     public Collection<Film> getAll() {
-        List<Integer> filmsId = jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_FILMS, Integer.class);
-        List<Film> films = new LinkedList<>();
-
-        for (Integer id : filmsId) {
-            Film film = findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
-            films.add(film);
-        }
-
-        return films;
+        return jdbcFilms.query(GET_VALUES_FOR_ALL_FILMS_MAPPING, filmListExtractor);
     }
 
     @Override

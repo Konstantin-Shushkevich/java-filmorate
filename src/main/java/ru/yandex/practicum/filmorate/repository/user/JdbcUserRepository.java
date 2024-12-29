@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.repository.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -10,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.extractor.UserExtractor;
+import ru.yandex.practicum.filmorate.extractor.UserListExtractor;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.*;
@@ -22,9 +22,8 @@ import static ru.yandex.practicum.filmorate.util.constant.UserRepositoryConstant
 public class JdbcUserRepository implements UserRepository {
 
     private final NamedParameterJdbcOperations jdbcUsers;
-
-    @Autowired
-    private UserExtractor userExtractor;
+    private final UserExtractor userExtractor;
+    private final UserListExtractor userListExtractor;
 
     @Override
     public User saveUser(User user) {
@@ -80,16 +79,7 @@ public class JdbcUserRepository implements UserRepository {
 
     @Override
     public Collection<User> getAll() {
-        List<Integer> usersId = jdbcUsers.getJdbcOperations().queryForList(GET_ALL_ID_FROM_USERS, Integer.class);
-        List<User> users = new LinkedList<>();
-        User user;
-
-        for (Integer id : usersId) {
-            user = findById(id).orElseThrow(() -> new NotFoundException("User's id doesn't in database"));
-            users.add(user);
-        }
-
-        return users;
+        return jdbcUsers.query(GET_VALUES_FOR_ALL_USERS_MAPPING, userListExtractor);
     }
 
     @Override
@@ -107,36 +97,33 @@ public class JdbcUserRepository implements UserRepository {
                 .toList();
     }
 
-    @Override
-    public void addFriend(Integer userId, Integer friendId, boolean status) {
+    public void addConfirmedFriend(Integer friendId) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
-        String sql;
-
-        if (status) {
-            mapSqlParameterSource.addValue("friend_id", friendId);
-            mapSqlParameterSource.addValue("status", true);
-            sql = UPDATE_FRIENDSHIP_STATUS;
-        } else {
-            mapSqlParameterSource.addValue("user_id", userId);
-            mapSqlParameterSource.addValue("friend_id", friendId);
-            mapSqlParameterSource.addValue("status", false);
-            sql = INSERT_NEW_LINE_TO_FRIENDSHIP;
-        }
-        jdbcUsers.update(sql, mapSqlParameterSource);
+        mapSqlParameterSource.addValue("friend_id", friendId);
+        mapSqlParameterSource.addValue("status", true);
+        jdbcUsers.update(UPDATE_FRIENDSHIP_STATUS, mapSqlParameterSource);
     }
 
-    public void deleteFriend(Integer userId, Integer friendId, boolean status) {
+    public void addUnConfirmedFriend(Integer userId, Integer friendId) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("user_id", userId);
         mapSqlParameterSource.addValue("friend_id", friendId);
-        String sql;
+        mapSqlParameterSource.addValue("status", false);
+        jdbcUsers.update(INSERT_NEW_LINE_TO_FRIENDSHIP, mapSqlParameterSource);
+    }
 
-        if (status) {
-            mapSqlParameterSource.addValue("status", false);
-            sql = UPDATE_FRIENDSHIP_STATUS_IF_DELETE;
-        } else {
-            sql = DELETE_FRIENDSHIP_COMPLETELY;
-        }
-        jdbcUsers.update(sql, mapSqlParameterSource);
+    public void deleteConfirmedFriend(Integer userId, Integer friendId) {
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("user_id", userId);
+        mapSqlParameterSource.addValue("friend_id", friendId);
+        mapSqlParameterSource.addValue("status", false);
+        jdbcUsers.update(UPDATE_FRIENDSHIP_STATUS_IF_DELETE, mapSqlParameterSource);
+    }
+
+    public void deleteUnConfirmedFriend(Integer userId, Integer friendId) {
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+        mapSqlParameterSource.addValue("user_id", userId);
+        mapSqlParameterSource.addValue("friend_id", friendId);
+        jdbcUsers.update(DELETE_FRIENDSHIP_COMPLETELY, mapSqlParameterSource);
     }
 }

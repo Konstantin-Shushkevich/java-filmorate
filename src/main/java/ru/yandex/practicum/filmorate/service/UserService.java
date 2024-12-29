@@ -31,7 +31,12 @@ public class UserService {
         user.addFriend(friendId);
         boolean isFriend = friend.getFriends().contains(user.getId());
 
-        jdbcUserRepository.addFriend(id, friendId, isFriend);
+        if (isFriend) {
+            jdbcUserRepository.addConfirmedFriend(friendId);
+        } else {
+            jdbcUserRepository.addUnConfirmedFriend(id, friendId);
+        }
+
         log.debug("Friend was successfully added");
         return friend;
     }
@@ -46,7 +51,12 @@ public class UserService {
         user.delFriend(friendId);
         boolean isFriend = friend.getFriends().contains(id);
 
-        jdbcUserRepository.deleteFriend(id, friendId, isFriend);
+        if (isFriend) {
+            jdbcUserRepository.deleteConfirmedFriend(id, friendId);
+        } else {
+            jdbcUserRepository.deleteUnConfirmedFriend(id, friendId);
+        }
+
         log.debug("Friend was successfully deleted");
         return friend;
     }
@@ -94,7 +104,7 @@ public class UserService {
         }
 
         friends.forEach(friendId -> jdbcUserRepository.findById(friendId).ifPresent(friend -> friend.delFriend(id)));
-        friends.forEach(friendId -> jdbcUserRepository.deleteFriend(friendId, id, false));
+        friends.forEach(friendId -> jdbcUserRepository.deleteUnConfirmedFriend(friendId, id));
 
         return jdbcUserRepository.deleteUser(id);
     }

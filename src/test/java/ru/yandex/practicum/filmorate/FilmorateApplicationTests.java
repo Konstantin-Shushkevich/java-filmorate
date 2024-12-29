@@ -10,7 +10,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.extractor.FilmExtractor;
+import ru.yandex.practicum.filmorate.extractor.FilmListExtractor;
 import ru.yandex.practicum.filmorate.extractor.UserExtractor;
+import ru.yandex.practicum.filmorate.extractor.UserListExtractor;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
@@ -30,7 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({JdbcFilmRepository.class, JdbcUserRepository.class, UserExtractor.class, FilmExtractor.class})
+@Import({JdbcFilmRepository.class, JdbcUserRepository.class, UserExtractor.class, FilmExtractor.class,
+		FilmListExtractor.class, UserListExtractor.class})
 class FilmorateApplicationTests {
 
 	private final JdbcFilmRepository jdbcFilmRepository;
@@ -148,7 +151,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void addAndDeleteFriend() {
-		jdbcUserRepository.addFriend(1, 2, false);
+		jdbcUserRepository.addUnConfirmedFriend(1, 2);
 
 		Optional<User> userExtractedOptional1 = jdbcUserRepository.findById(1);
 		Optional<User> userExtractedOptional2 = jdbcUserRepository.findById(2);
@@ -164,7 +167,7 @@ class FilmorateApplicationTests {
 						assertThat(user).hasFieldOrPropertyWithValue("friends", Set.of())
 				);
 
-		jdbcUserRepository.addFriend(2, 1, true);
+		jdbcUserRepository.addConfirmedFriend(1);
 
 		userExtractedOptional1 = jdbcUserRepository.findById(1);
 		userExtractedOptional2 = jdbcUserRepository.findById(2);
@@ -181,7 +184,7 @@ class FilmorateApplicationTests {
 						assertThat(user).hasFieldOrPropertyWithValue("friends", Set.of(1))
 				);
 
-		jdbcUserRepository.deleteFriend(1, 2, true);
+		jdbcUserRepository.deleteConfirmedFriend(1, 2);
 
 		userExtractedOptional1 = jdbcUserRepository.findById(1);
 		userExtractedOptional2 = jdbcUserRepository.findById(2);
@@ -198,7 +201,7 @@ class FilmorateApplicationTests {
 						assertThat(user).hasFieldOrPropertyWithValue("friends", Set.of())
 				);
 
-		jdbcUserRepository.deleteFriend(1, 2, false);
+		jdbcUserRepository.deleteUnConfirmedFriend(1, 2);
 
 		userExtractedOptional1 = jdbcUserRepository.findById(1);
 		userExtractedOptional2 = jdbcUserRepository.findById(2);

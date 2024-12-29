@@ -27,6 +27,13 @@ public class FilmRepositoryConstants {
                     "LEFT JOIN likes l ON l.film_id = f.id " +
                     "WHERE f.id = :id";
 
+    public static final String GET_VALUES_FOR_ALL_FILMS_MAPPING =
+            "SELECT f.*, fg.genre_id, g.genre_name, mr.point_name, l.user_id " +
+                    "FROM films f LEFT JOIN film_genre fg ON f.id = fg.film_id " +
+                    "LEFT JOIN genre g ON fg.genre_id = g.id " +
+                    "LEFT JOIN mpa_rating mr ON mr.id = f.mpa_rating_id " +
+                    "LEFT JOIN likes l ON l.film_id = f.id";
+
     public static final String INSERT_LIKE_VALUES_TO_LIKES =
             "INSERT INTO likes (user_id, film_id) " +
                     "VALUES (:user_id, :film_id)";

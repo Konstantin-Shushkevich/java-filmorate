@@ -19,6 +19,10 @@ public class UserRepositoryConstants {
                     "LEFT JOIN friendship f ON (u.id = f.user_id OR u.id = f.friend_id) " +
                     "WHERE u.id = :id";
 
+    public static final String GET_VALUES_FOR_ALL_USERS_MAPPING =
+            "SELECT u.*, f.* FROM users u " +
+                    "LEFT JOIN friendship f ON (u.id = f.user_id OR u.id = f.friend_id)";
+
     public static final String UPDATE_FRIENDSHIP_STATUS =
             "UPDATE friendship " +
                     "SET status = :status " +

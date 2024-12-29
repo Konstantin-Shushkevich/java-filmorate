@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
-import ru.yandex.practicum.filmorate.repository.JdbcRatingMpaRepository;
+import ru.yandex.practicum.filmorate.repository.SimpleRepository;
 
 import java.util.Collection;
 
@@ -17,7 +17,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @Slf4j
 public class RatingMpaController {
-    private final JdbcRatingMpaRepository jdbcRatingMpaRepository;
+    private final SimpleRepository<RatingMpa> jdbcRatingMpaRepository;
 
     @GetMapping
     public Collection<RatingMpa> getAll() {

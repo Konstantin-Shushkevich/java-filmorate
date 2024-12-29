@@ -18,6 +18,4 @@ public interface UserRepository {
     Optional<User> findById(Integer id);
 
     List<User> findByIds(List<Integer> usersId);
-
-    void addFriend(Integer userId, Integer friendId, boolean status);
 }
