@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.extractor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
@@ -17,6 +17,7 @@ import java.util.TreeSet;
 
 @Component
 public class FilmExtractor implements ResultSetExtractor<Film> {
+
     @Override
     public Film extractData(ResultSet rs) throws SQLException, DataAccessException {
         Film film = null;
@@ -49,7 +50,7 @@ public class FilmExtractor implements ResultSetExtractor<Film> {
         }
 
         if (film == null) {
-            throw new InternalServerException("Something went wrong. Film is null");
+            throw new BadRequestException("Something went wrong. Film is null");
         }
 
         if (!likes.contains(0)) {

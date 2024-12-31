@@ -97,6 +97,7 @@ public class JdbcUserRepository implements UserRepository {
                 .toList();
     }
 
+    @Override
     public void addConfirmedFriend(Integer friendId) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("friend_id", friendId);
@@ -104,6 +105,7 @@ public class JdbcUserRepository implements UserRepository {
         jdbcUsers.update(UPDATE_FRIENDSHIP_STATUS, mapSqlParameterSource);
     }
 
+    @Override
     public void addUnConfirmedFriend(Integer userId, Integer friendId) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("user_id", userId);
@@ -112,6 +114,7 @@ public class JdbcUserRepository implements UserRepository {
         jdbcUsers.update(INSERT_NEW_LINE_TO_FRIENDSHIP, mapSqlParameterSource);
     }
 
+    @Override
     public void deleteConfirmedFriend(Integer userId, Integer friendId) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("user_id", userId);
@@ -120,6 +123,7 @@ public class JdbcUserRepository implements UserRepository {
         jdbcUsers.update(UPDATE_FRIENDSHIP_STATUS_IF_DELETE, mapSqlParameterSource);
     }
 
+    @Override
     public void deleteUnConfirmedFriend(Integer userId, Integer friendId) {
         MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
         mapSqlParameterSource.addValue("user_id", userId);

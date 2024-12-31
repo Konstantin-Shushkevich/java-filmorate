@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.extractor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
@@ -16,6 +16,7 @@ import java.util.Set;
 
 @Component
 public class UserListExtractor implements ResultSetExtractor<List<User>> {
+
     @Override
     public List<User> extractData(ResultSet rs) throws SQLException, DataAccessException {
         List<User> users = new LinkedList<>();
@@ -46,7 +47,7 @@ public class UserListExtractor implements ResultSetExtractor<List<User>> {
             }
 
             if (user == null) {
-                throw new InternalServerException("Something went wrong. User is null");
+                throw new BadRequestException("Something went wrong. User is null");
             }
 
             currentId = user.getId();

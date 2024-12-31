@@ -17,8 +17,10 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.RatingMpa;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.repository.film.JdbcFilmRepository;
 import ru.yandex.practicum.filmorate.repository.user.JdbcUserRepository;
+import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,8 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 		FilmListExtractor.class, UserListExtractor.class})
 class FilmorateApplicationTests {
 
-	private final JdbcFilmRepository jdbcFilmRepository;
-	private final JdbcUserRepository jdbcUserRepository;
+	private final FilmRepository filmRepository;
+	private final UserRepository userRepository;
 	private final JdbcTemplate jdbcTemplate;
 
 	private final User user1 = new User();
@@ -96,10 +98,10 @@ class FilmorateApplicationTests {
 		film2.setGenres(Set.of(genre3));
 		film2.setMpa(mpa2);
 
-		jdbcUserRepository.saveUser(user1);
-		jdbcUserRepository.saveUser(user2);
-		jdbcFilmRepository.saveFilm(film1);
-		jdbcFilmRepository.saveFilm(film2);
+		userRepository.saveUser(user1);
+		userRepository.saveUser(user2);
+		filmRepository.saveFilm(film1);
+		filmRepository.saveFilm(film2);
 	}
 
 	@AfterEach
@@ -110,7 +112,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testFindUserById() {
-		Optional<User> userOptional = jdbcUserRepository.findById(1);
+		Optional<User> userOptional = userRepository.findById(1);
 
 		assertThat(userOptional)
 				.isPresent()
@@ -121,8 +123,8 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testGetAllUsersAndFindByIds() {
-		List<User> users = jdbcUserRepository.getAll().stream().toList();
-		List<User> usersGotByIds = jdbcUserRepository.findByIds(List.of(1, 2));
+		List<User> users = userRepository.getAll().stream().toList();
+		List<User> usersGotByIds = userRepository.findByIds(List.of(1, 2));
 
 		assertThat(users).containsExactlyInAnyOrderElementsOf(usersTest);
 		assertThat(usersGotByIds).containsExactlyInAnyOrderElementsOf(usersTest);
@@ -137,24 +139,24 @@ class FilmorateApplicationTests {
 		userUpdated.setName("user1Upd");
 		userUpdated.setBirthday(LocalDate.of(1999, 1, 1));
 
-		jdbcUserRepository.updateUser(userUpdated);
-		User userUpdatedFromDb = jdbcUserRepository.findById(1).get();
+		userRepository.updateUser(userUpdated);
+		User userUpdatedFromDb = userRepository.findById(1).get();
 		assertThat(userUpdatedFromDb).isEqualTo(userUpdated);
 	}
 
 	@Test
 	public void testDeleteUser() {
-		jdbcUserRepository.deleteUser(1);
-		jdbcUserRepository.deleteUser(2);
-		assertTrue(jdbcUserRepository.getAll().isEmpty());
+		userRepository.deleteUser(1);
+		userRepository.deleteUser(2);
+		assertTrue(userRepository.getAll().isEmpty());
 	}
 
 	@Test
 	public void addAndDeleteFriend() {
-		jdbcUserRepository.addUnConfirmedFriend(1, 2);
+		userRepository.addUnConfirmedFriend(1, 2);
 
-		Optional<User> userExtractedOptional1 = jdbcUserRepository.findById(1);
-		Optional<User> userExtractedOptional2 = jdbcUserRepository.findById(2);
+		Optional<User> userExtractedOptional1 = userRepository.findById(1);
+		Optional<User> userExtractedOptional2 = userRepository.findById(2);
 
 		assertThat(userExtractedOptional1)
 				.isPresent()
@@ -167,10 +169,10 @@ class FilmorateApplicationTests {
 						assertThat(user).hasFieldOrPropertyWithValue("friends", Set.of())
 				);
 
-		jdbcUserRepository.addConfirmedFriend(1);
+		userRepository.addConfirmedFriend(1);
 
-		userExtractedOptional1 = jdbcUserRepository.findById(1);
-		userExtractedOptional2 = jdbcUserRepository.findById(2);
+		userExtractedOptional1 = userRepository.findById(1);
+		userExtractedOptional2 = userRepository.findById(2);
 
 		assertThat(userExtractedOptional1)
 				.isPresent()
@@ -184,10 +186,10 @@ class FilmorateApplicationTests {
 						assertThat(user).hasFieldOrPropertyWithValue("friends", Set.of(1))
 				);
 
-		jdbcUserRepository.deleteConfirmedFriend(1, 2);
+		userRepository.deleteConfirmedFriend(1, 2);
 
-		userExtractedOptional1 = jdbcUserRepository.findById(1);
-		userExtractedOptional2 = jdbcUserRepository.findById(2);
+		userExtractedOptional1 = userRepository.findById(1);
+		userExtractedOptional2 = userRepository.findById(2);
 
 		assertThat(userExtractedOptional1)
 				.isPresent()
@@ -201,10 +203,10 @@ class FilmorateApplicationTests {
 						assertThat(user).hasFieldOrPropertyWithValue("friends", Set.of())
 				);
 
-		jdbcUserRepository.deleteUnConfirmedFriend(1, 2);
+		userRepository.deleteUnConfirmedFriend(1, 2);
 
-		userExtractedOptional1 = jdbcUserRepository.findById(1);
-		userExtractedOptional2 = jdbcUserRepository.findById(2);
+		userExtractedOptional1 = userRepository.findById(1);
+		userExtractedOptional2 = userRepository.findById(2);
 
 		assertThat(userExtractedOptional1)
 				.isPresent()
@@ -221,7 +223,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testFindFilmById() {
-		Optional<Film> filmOptional = jdbcFilmRepository.findById(1);
+		Optional<Film> filmOptional = filmRepository.findById(1);
 
 		assertThat(filmOptional)
 				.isPresent()
@@ -232,7 +234,7 @@ class FilmorateApplicationTests {
 
 	@Test
 	public void testGetAllFilms() {
-		List<Film> films = jdbcFilmRepository.getAll().stream().toList();
+		List<Film> films = filmRepository.getAll().stream().toList();
 
 		assertThat(films).containsExactlyInAnyOrderElementsOf(filmsTest);
 	}
@@ -248,27 +250,27 @@ class FilmorateApplicationTests {
 		filmUpdated.setGenres(Set.of(genre3));
 		filmUpdated.setMpa(mpa2);
 
-		jdbcFilmRepository.updateFilm(filmUpdated);
-		Film filmUpdatedFromRep = jdbcFilmRepository.findById(1).get();
+		filmRepository.updateFilm(filmUpdated);
+		Film filmUpdatedFromRep = filmRepository.findById(1).get();
 		assertThat(filmUpdatedFromRep).isEqualTo(filmUpdated);
 	}
 
 	@Test
 	public void testDeleteFilm() {
-		jdbcFilmRepository.deleteFilm(1);
-		jdbcFilmRepository.deleteFilm(2);
-		assertTrue(jdbcFilmRepository.getAll().isEmpty());
+		filmRepository.deleteFilm(1);
+		filmRepository.deleteFilm(2);
+		assertTrue(filmRepository.getAll().isEmpty());
 	}
 
 	@Test
 	public void testLikEndDisLikeFilms() {
-		jdbcFilmRepository.likeFilm(1, 2);
-		Film filmExecuted = jdbcFilmRepository.findById(1).get();
+		filmRepository.likeFilm(1, 2);
+		Film filmExecuted = filmRepository.findById(1).get();
 		Set<Integer> likes = filmExecuted.getLikes();
 		assertEquals(likes, Set.of(2));
 
-		jdbcFilmRepository.disLikeFilm(1, 2);
-		filmExecuted = jdbcFilmRepository.findById(1).get();
+		filmRepository.disLikeFilm(1, 2);
+		filmExecuted = filmRepository.findById(1).get();
 		likes = filmExecuted.getLikes();
 		assertTrue(likes.isEmpty());
 	}

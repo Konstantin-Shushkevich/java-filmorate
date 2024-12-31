@@ -17,18 +17,18 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @Slf4j
 public class RatingMpaController {
-    private final SimpleRepository<RatingMpa> jdbcRatingMpaRepository;
+    private final SimpleRepository<RatingMpa> ratingMpaRepository;
 
     @GetMapping
     public Collection<RatingMpa> getAll() {
         log.trace("Getting list of all mpa ratings has been started");
-        return jdbcRatingMpaRepository.getAll();
+        return ratingMpaRepository.getAll();
     }
 
     @GetMapping("/{id}")
     public RatingMpa getMpaRating(@PathVariable Integer id) {
         log.trace("Searching for mpa rating in progress");
-        return jdbcRatingMpaRepository.findById(id)
+        return ratingMpaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("MPA rating wasn't found"));
     }
 }

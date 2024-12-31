@@ -22,19 +22,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FilmController {
     private final FilmService filmService;
-    private final FilmRepository jdbcFilmRepository;
+    private final FilmRepository filmRepository;
 
     @GetMapping
     public Collection<Film> getAll() {
         log.trace("Getting list of all films has been started");
-        return jdbcFilmRepository.getAll();
+        return filmRepository.getAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film create(@Valid @RequestBody Film film) {
         log.trace("Adding film is started");
-        return jdbcFilmRepository.saveFilm(film);
+        return filmRepository.saveFilm(film);
     }
 
     @PutMapping
@@ -47,7 +47,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable Integer id) {
         log.trace("Searching for film in progress");
-        return jdbcFilmRepository.findById(id)
+        return filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Film wasn't found"));
     }
 

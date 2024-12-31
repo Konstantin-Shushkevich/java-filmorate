@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.exception.BadRequestException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.extractor.FilmExtractor;
 import ru.yandex.practicum.filmorate.extractor.FilmListExtractor;
@@ -62,7 +62,7 @@ public class JdbcFilmRepository implements FilmRepository {
         findById(id).orElseThrow(() -> new NotFoundException("Film's id doesn't in database"));
 
         if (id == null) {
-            throw new InternalServerException("Film's id is null");
+            throw new BadRequestException("Not able to update film. Id is null");
         }
 
         deleteFilm(id);
@@ -135,15 +135,19 @@ public class JdbcFilmRepository implements FilmRepository {
                     .map(Genre::getId)
                     .toList();
 
+            List<MapSqlParameterSource> batchValues = new ArrayList<>();
+
             for (Integer id : genresId) {
                 validateGenres(id);
 
-                MapSqlParameterSource otherMapSqlParameterSource = new MapSqlParameterSource();
-                otherMapSqlParameterSource.addValue("film_id", film.getId());
-                otherMapSqlParameterSource.addValue("genre_id", id);
+                MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource();
+                mapSqlParameterSource.addValue("film_id", film.getId());
+                mapSqlParameterSource.addValue("genre_id", id);
 
-                jdbcFilms.update(INSERT_VALUES_TO_FILM_GENRE, otherMapSqlParameterSource);
+                batchValues.add(mapSqlParameterSource);
             }
+
+            jdbcFilms.batchUpdate(INSERT_VALUES_TO_FILM_GENRE, batchValues.toArray(new MapSqlParameterSource[0]));
         }
     }
 
@@ -161,7 +165,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_MPA_RATING, Integer.class);
 
         if (!ratingsIdFromRepository.contains(mpaId)) {
-            throw new InternalServerException("Not able to add film. Incorrect mpa");
+            throw new BadRequestException("Not able to add film. Incorrect mpa");
         }
     }
 
@@ -170,7 +174,7 @@ public class JdbcFilmRepository implements FilmRepository {
                 jdbcFilms.getJdbcOperations().queryForList(GET_ALL_ID_FROM_GENRE, Integer.class);
 
         if (!genresIdFromRepository.contains(id)) {
-            throw new InternalServerException("Not able to add genre. Incorrect genre");
+            throw new BadRequestException("Not able to add genre. Incorrect genre");
         }
     }
 }

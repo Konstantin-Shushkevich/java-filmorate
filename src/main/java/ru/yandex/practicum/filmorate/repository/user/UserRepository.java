@@ -18,4 +18,12 @@ public interface UserRepository {
     Optional<User> findById(Integer id);
 
     List<User> findByIds(List<Integer> usersId);
+
+    void addConfirmedFriend(Integer friendId);
+
+    void addUnConfirmedFriend(Integer userId, Integer friendId);
+
+    void deleteConfirmedFriend(Integer userId, Integer friendId);
+
+    void deleteUnConfirmedFriend(Integer userId, Integer friendId);
 }

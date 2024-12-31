@@ -17,18 +17,18 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @Slf4j
 public class GenreController {
-    private final SimpleRepository<Genre> jdbcGenreRepository;
+    private final SimpleRepository<Genre> genreRepository;
 
     @GetMapping
     public Collection<Genre> getAll() {
         log.trace("Getting list of all genres has been started");
-        return jdbcGenreRepository.getAll();
+        return genreRepository.getAll();
     }
 
     @GetMapping("/{id}")
     public Genre getGenre(@PathVariable Integer id) {
         log.trace("Searching for genre in progress");
-        return jdbcGenreRepository.findById(id)
+        return genreRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Genre wasn't found"));
     }
 }
