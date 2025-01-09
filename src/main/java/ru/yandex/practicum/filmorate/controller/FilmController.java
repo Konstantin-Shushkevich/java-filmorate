@@ -9,8 +9,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.repository.film.FilmRepository;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,20 +21,20 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class FilmController {
-    private final FilmStorage inMemoryFilmStorage;
     private final FilmService filmService;
+    private final FilmRepository filmRepository;
 
     @GetMapping
     public Collection<Film> getAll() {
         log.trace("Getting list of all films has been started");
-        return inMemoryFilmStorage.getAll();
+        return filmRepository.getAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film create(@Valid @RequestBody Film film) {
         log.trace("Adding film is started");
-        return inMemoryFilmStorage.saveFilm(film);
+        return filmRepository.saveFilm(film);
     }
 
     @PutMapping
@@ -47,7 +47,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilm(@PathVariable Integer id) {
         log.trace("Searching for film in progress");
-        return inMemoryFilmStorage.findById(id)
+        return filmRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Film wasn't found"));
     }
 

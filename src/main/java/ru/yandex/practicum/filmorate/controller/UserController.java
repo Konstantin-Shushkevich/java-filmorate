@@ -9,8 +9,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.repository.user.UserRepository;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -21,13 +21,13 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class UserController {
-    private final UserStorage inMemoryUserStorage;
+    private final UserRepository userRepository;
     private final UserService userService;
 
     @GetMapping
     public Collection<User> getAll() {
         log.trace("Getting list of all users has been started");
-        return inMemoryUserStorage.getAll();
+        return userRepository.getAll();
     }
 
     @PostMapping
@@ -35,7 +35,7 @@ public class UserController {
     public User create(@Valid @RequestBody User user) {
         log.trace("Adding user is started");
         userService.setName(user);
-        return inMemoryUserStorage.saveUser(user);
+        return userRepository.saveUser(user);
     }
 
     @PutMapping
@@ -43,13 +43,13 @@ public class UserController {
     public User update(@Valid @RequestBody User user) {
         log.trace("Updating user in progress");
         userService.setName(user);
-        return inMemoryUserStorage.updateUser(user);
+        return userRepository.updateUser(user);
     }
 
     @GetMapping("/{id}")
     public User getUser(@PathVariable Integer id) {
         log.trace("Searching for user in progress");
-        return inMemoryUserStorage.findById(id)
+        return userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User wasn't found"));
     }
 
